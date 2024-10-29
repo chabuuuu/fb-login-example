@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Login</title>
+</head>
+
+<body>
+    <h1>Đăng nhập bằng Facebook</h1>
+    <button onclick="loginWithFacebook()">Đăng nhập bằng Facebook</button>
+
+    <script>
+        // Tải SDK của Facebook
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: 'FB_APP_ID',  // Thay bằng App ID của bạn
+                cookie: true,
+                xfbml: true,
+                version: 'v10.0'
+            });
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+        // Hàm đăng nhập
+        function loginWithFacebook() {
+            FB.login((response) => {
+                if (response.authResponse) {
+                    const accessToken = response.authResponse.accessToken;
+
+                    // Gửi accessToken tới backend để nhận token JWT từ backend
+                    fetch('https://localhost:3000/api/auth/facebook', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ accessToken }),
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            console.log('Token từ backend:', data.token);  // Nhận JWT token từ backend
+                        })
+                        .catch(error => console.error('Lỗi:', error));
+                } else {
+                    console.error('Đăng nhập bị hủy hoặc không được cấp quyền.');
+                }
+            }, { scope: ['email', 'public_profile'] });
+        }
+    </script>
+</body>
+
+</html>
